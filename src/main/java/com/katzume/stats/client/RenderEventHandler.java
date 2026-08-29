@@ -5,6 +5,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.EntityLivingBase;
@@ -18,6 +19,9 @@ import com.katzume.stats.capability.IPlayerStats;
 public class RenderEventHandler {
     private static final int GOLD = 0xFFD4AF37;
     private static final int DARK_BG = 0x8A000000;
+    private static final int RED = 0xFFFF0000;
+    private static final int BLUE = 0xFF0066FF;
+    private static final int GRAY = 0xFFC0C0C0;
     
     @SubscribeEvent
     public static void onRenderGameOverlay(RenderGameOverlayEvent.Post event) {
@@ -43,7 +47,7 @@ public class RenderEventHandler {
         drawMainHUD(mc, stats, player, resolution);
         
         // Draw mob health if looking at entity
-        drawMobHealthBar(mc, player);
+        drawMobHealthBar(mc, player, resolution);
         
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
@@ -71,17 +75,17 @@ public class RenderEventHandler {
         // Health (Red)
         float health = player.getHealth();
         int maxHealth = stats.getMaxHealth();
-        drawStatBar(mc, hud_x + 10, startY, 110, 10, health, maxHealth, 0xFFFF0000, "❤");
+        drawStatBar(mc, hud_x + 10, startY, 110, 10, health, maxHealth, RED, "♥");
         mc.fontRenderer.drawString(String.format("%.1f/%.0f", health, (float)maxHealth), hud_x + 125, startY + 1, 0xFFFFFFFF);
         
         // Hunger (Blue)
         float hunger = player.getFoodStats().getFoodLevel();
-        drawStatBar(mc, hud_x + 10, startY + 14, 110, 10, hunger, 20, 0xFF0066FF, "🍖");
+        drawStatBar(mc, hud_x + 10, startY + 14, 110, 10, hunger, 20, BLUE, "🍖");
         mc.fontRenderer.drawString(String.format("%d/20", (int)hunger), hud_x + 125, startY + 15, 0xFFFFFFFF);
         
         // Armor (Shield)
         int armor = player.getTotalArmorValue();
-        drawStatBar(mc, hud_x + 10, startY + 28, 110, 10, armor, 20, 0xFFC0C0C0, "🛡");
+        drawStatBar(mc, hud_x + 10, startY + 28, 110, 10, armor, 20, GRAY, "⬛");
         mc.fontRenderer.drawString(String.format("%d", armor), hud_x + 125, startY + 29, 0xFFFFFFFF);
         
         // Level and XP
@@ -94,7 +98,7 @@ public class RenderEventHandler {
         }
     }
     
-    private static void drawMobHealthBar(Minecraft mc, EntityPlayer player) {
+    private static void drawMobHealthBar(Minecraft mc, EntityPlayer player, ScaledResolution resolution) {
         RayTraceResult rayTraceResult = mc.objectMouseOver;
         
         if (rayTraceResult == null || rayTraceResult.typeOfHit != RayTraceResult.Type.ENTITY) {
@@ -106,7 +110,6 @@ public class RenderEventHandler {
         }
         
         EntityLivingBase entity = (EntityLivingBase) rayTraceResult.entityHit;
-        ScaledResolution resolution = new ScaledResolution(mc);
         
         int width = resolution.getScaledWidth();
         int height = resolution.getScaledHeight();
@@ -129,7 +132,7 @@ public class RenderEventHandler {
         drawRectangle(barX, barY, barWidth, barHeight, DARK_BG);
         
         // Draw health bar
-        drawStatBar(mc, barX, barY, barWidth - 2, barHeight, health, maxHealth, 0xFFFF0000, "");
+        drawStatBar(mc, barX, barY, barWidth - 2, barHeight, health, maxHealth, RED, "");
         
         // Draw mob name and health text
         int nameWidth = mc.fontRenderer.getStringWidth(mobName);
@@ -164,14 +167,7 @@ public class RenderEventHandler {
     }
     
     private static void drawRectangle(int x, int y, int width, int height, int color) {
-        float a = (color >> 24 & 255) / 255.0F;
-        float r = (color >> 16 & 255) / 255.0F;
-        float g = (color >> 8 & 255) / 255.0F;
-        float b = (color & 255) / 255.0F;
-        
-        GlStateManager.color(r, g, b, a);
-        fillRect(x, y, x + width, y + height, color);
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        Gui.drawRect(x, y, x + width, y + height, color);
     }
     
     private static void drawRectangleBorder(int x, int y, int width, int height, int thickness, int color) {
@@ -179,31 +175,5 @@ public class RenderEventHandler {
         drawRectangle(x, y + height - thickness, width, thickness, color);
         drawRectangle(x, y, thickness, height, color);
         drawRectangle(x + width - thickness, y, thickness, height, color);
-    }
-    
-    private static void fillRect(int x1, int y1, int x2, int y2, int color) {
-        if (x1 < x2) {
-            int temp = x1;
-            x1 = x2;
-            x2 = temp;
-        }
-        if (y1 < y2) {
-            int temp = y1;
-            y1 = y2;
-            y2 = temp;
-        }
-        
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(770, 771);
-        GlStateManager.disableTexture2D();
-        
-        float a = (color >> 24 & 255) / 255.0F;
-        float r = (color >> 16 & 255) / 255.0F;
-        float g = (color >> 8 & 255) / 255.0F;
-        float b = (color & 255) / 255.0F;
-        
-        GlStateManager.color(r, g, b, a);
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
     }
 }

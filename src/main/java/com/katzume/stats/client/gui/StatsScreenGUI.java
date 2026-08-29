@@ -2,6 +2,7 @@ package com.katzume.stats.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import com.katzume.stats.capability.IPlayerStats;
 import com.katzume.stats.capability.PlayerStatsCapability;
@@ -110,43 +111,7 @@ public class StatsScreenGUI extends GuiScreen {
     }
     
     private void drawRectangle(int x, int y, int width, int height, int color) {
-        float a = (color >> 24 & 255) / 255.0F;
-        float r = (color >> 16 & 255) / 255.0F;
-        float g = (color >> 8 & 255) / 255.0F;
-        float b = (color & 255) / 255.0F;
-        
-        GlStateManager.color(r, g, b, a);
-        GlStateManager.disableTexture2D();
-        fillRect(x, y, x + width, y + height, color);
-        GlStateManager.enableTexture2D();
-    }
-    
-    private void fillRect(int x1, int y1, int x2, int y2, int color) {
-        int temp;
-        if (x1 < x2) {
-            temp = x1;
-            x1 = x2;
-            x2 = temp;
-        }
-        if (y1 < y2) {
-            temp = y1;
-            y1 = y2;
-            y2 = temp;
-        }
-        
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(770, 771);
-        GlStateManager.disableTexture2D();
-        
-        float a = (color >> 24 & 255) / 255.0F;
-        float r = (color >> 16 & 255) / 255.0F;
-        float g = (color >> 8 & 255) / 255.0F;
-        float b = (color & 255) / 255.0F;
-        
-        GlStateManager.color(r, g, b, a);
-        
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
+        Gui.drawRect(x, y, x + width, y + height, color);
     }
     
     @Override
@@ -156,7 +121,7 @@ public class StatsScreenGUI extends GuiScreen {
     
     @Override
     public void keyTyped(char typedChar, int keyCode) {
-        if (keyCode == 1 || keyCode == 19) { // ESC or I key
+        if (keyCode == 1 || keyCode == 23) { // ESC or I key
             this.mc.displayGuiScreen(null);
             if (this.mc.currentScreen == null) {
                 this.mc.setIngameFocus();

@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.katzume.stats.capability.PlayerStatsCapability;
 import com.katzume.stats.command.CommandRegistry;
+import com.katzume.stats.network.NetworkManager;
 
 @Mod(modid = StatsMod.MODID, name = StatsMod.NAME, version = StatsMod.VERSION)
 public class StatsMod {
@@ -19,6 +20,7 @@ public class StatsMod {
     @EventHandler
     public void preinit(FMLPreInitializationEvent event) {
         PlayerStatsCapability.register();
+        NetworkManager.registerMessages();
         MinecraftForge.EVENT_BUS.register(this);
     }
 

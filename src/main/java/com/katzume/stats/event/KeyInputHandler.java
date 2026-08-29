@@ -6,12 +6,13 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
+import org.lwjgl.input.Keyboard;
 import com.katzume.stats.StatsMod;
 import com.katzume.stats.client.gui.StatsScreenGUI;
 
 @Mod.EventBusSubscriber(modid = StatsMod.MODID, value = Side.CLIENT)
 public class KeyInputHandler {
-    private static final int KEY_STATS = 23; // I key
     
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
@@ -22,7 +23,8 @@ public class KeyInputHandler {
             return;
         }
         
-        if (event.getKey() == KEY_STATS) {
+        // Tecla I (código 23)
+        if (Keyboard.isKeyDown(Keyboard.KEY_I)) {
             mc.displayGuiScreen(new StatsScreenGUI());
         }
     }
