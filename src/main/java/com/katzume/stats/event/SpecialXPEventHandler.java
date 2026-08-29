@@ -4,7 +4,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import com.katzume.stats.StatsMod;
 import com.katzume.stats.capability.IPlayerStats;
@@ -22,25 +21,31 @@ public class SpecialXPEventHandler {
             return;
         }
         
-        // El jugador que mató al mob
-        if (entity.attackingPlayer != null) {
-            EntityPlayer player = entity.attackingPlayer;
-            
-            if (player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
-                IPlayerStats stats = PlayerStatsCapability.getStats(player);
+        try {
+            // El jugador que mató al mob
+            if (entity.attackingPlayer != null) {
+                EntityPlayer player = entity.attackingPlayer;
                 
-                // Crear orbe XP especial (rojo) en lugar del verde normal
-                int xpAmount = event.getOriginalExperience();
-                EntityStatsXPOrb statsXpOrb = new EntityStatsXPOrb(entity.world, 
-                    entity.posX, entity.posY, entity.posZ, xpAmount);
-                entity.world.spawnEntity(statsXpOrb);
-                
-                // Dar XP al jugador también
-                stats.addStatsXP(xpAmount);
-                
-                // Cancelar drop de XP normal verde
-                event.setDroppedExperience(0);
+                if (player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+                    IPlayerStats stats = PlayerStatsCapability.getStats(player);
+                    if (stats != null) {
+                        // Crear orbe XP especial (rojo) en lugar del verde normal
+                        int xpAmount = event.getOriginalExperience();
+                        EntityStatsXPOrb statsXpOrb = new EntityStatsXPOrb(entity.world, 
+                            entity.posX, entity.posY, entity.posZ, xpAmount);
+                        entity.world.spawnEntity(statsXpOrb);
+                        
+                        // Dar XP al jugador también
+                        stats.addStatsXP(xpAmount);
+                        
+                        // Cancelar drop de XP normal verde
+                        event.setDroppedExperience(0);
+                    }
+                }
             }
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in SpecialXPEventHandler: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

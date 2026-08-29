@@ -8,8 +8,6 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
 import com.katzume.stats.StatsMod;
 import com.katzume.stats.capability.IPlayerStats;
 import com.katzume.stats.capability.PlayerStatsCapability;
@@ -28,10 +26,15 @@ public class XPEventHandler {
             return;
         }
         
-        IPlayerStats stats = PlayerStatsCapability.getStats(player);
-        int xpGain = 5; // XP por romper bloque
-        
-        stats.addStatsXP(xpGain);
+        try {
+            IPlayerStats stats = PlayerStatsCapability.getStats(player);
+            if (stats != null) {
+                int xpGain = 5; // XP por romper bloque
+                stats.addStatsXP(xpGain);
+            }
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in onBlockBreak: " + e.getMessage());
+        }
     }
     
     @SubscribeEvent
@@ -42,37 +45,25 @@ public class XPEventHandler {
             return;
         }
         
-        // El jugador que mató al mob
-        if (entity.attackingPlayer != null) {
-            EntityPlayer player = entity.attackingPlayer;
-            
-            if (player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
-                IPlayerStats stats = PlayerStatsCapability.getStats(player);
+        try {
+            // El jugador que mató al mob
+            if (entity.attackingPlayer != null) {
+                EntityPlayer player = entity.attackingPlayer;
                 
-                // XP basado en el mob
-                int xpGain = event.getOriginalExperience();
-                stats.addStatsXP(xpGain);
-                
-                // Cancelar drop de XP normal, usar el especial
-                event.setDroppedExperience(0);
+                if (player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+                    IPlayerStats stats = PlayerStatsCapability.getStats(player);
+                    if (stats != null) {
+                        // XP basado en el mob
+                        int xpGain = event.getOriginalExperience();
+                        stats.addStatsXP(xpGain);
+                        
+                        // Cancelar drop de XP normal
+                        event.setDroppedExperience(0);
+                    }
+                }
             }
-        }
-    }
-    
-    @SubscribeEvent
-    public static void onPlayerAttack(AttackEntityEvent event) {
-        EntityPlayer player = event.getEntityPlayer();
-        
-        if (player.world.isRemote || !player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
-            return;
-        }
-        
-        IPlayerStats stats = PlayerStatsCapability.getStats(player);
-        
-        // Aplicar daño extra por Fuerza
-        float extraDamage = stats.getTotalStrength() * 0.5f;
-        if (extraDamage > 0 && event.getTarget() instanceof EntityLivingBase) {
-            // El daño se aplicará naturalmente, solo mostramos aquí para referencia
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in onMobKill: " + e.getMessage());
         }
     }
 }

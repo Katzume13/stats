@@ -2,7 +2,6 @@ package com.katzume.stats.event;
 
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -23,8 +22,17 @@ public class PlayerSyncHandler {
             return;
         }
         
-        if (player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+        try {
+            if (!player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+                System.err.println("[Stats Mod] Player " + player.getName() + " does not have stats capability!");
+                return;
+            }
+            
             IPlayerStats stats = PlayerStatsCapability.getStats(player);
+            if (stats == null) {
+                System.err.println("[Stats Mod] Could not get stats for player " + player.getName());
+                return;
+            }
             
             // Aplicar vida máxima
             player.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH)
@@ -37,7 +45,11 @@ public class PlayerSyncHandler {
                     new NetworkManager.SyncStatsMessage(stats),
                     playerMP
                 );
+                System.out.println("[Stats Mod] Synced stats for player " + player.getName());
             }
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in onPlayerJoin: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -49,8 +61,15 @@ public class PlayerSyncHandler {
             return;
         }
         
-        if (player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+        try {
+            if (!player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+                return;
+            }
+            
             IPlayerStats stats = PlayerStatsCapability.getStats(player);
+            if (stats == null) {
+                return;
+            }
             
             // Restaurar vida máxima
             player.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH)
@@ -65,6 +84,9 @@ public class PlayerSyncHandler {
                     playerMP
                 );
             }
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in onPlayerRespawn: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

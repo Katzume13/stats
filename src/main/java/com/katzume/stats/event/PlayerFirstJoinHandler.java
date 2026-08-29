@@ -8,8 +8,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import com.katzume.stats.StatsMod;
 import com.katzume.stats.capability.IPlayerStats;
 import com.katzume.stats.capability.PlayerStatsCapability;
-import com.katzume.stats.client.gui.RaceSelectionGUI;
-import com.katzume.stats.util.StatsUtil;
 
 @Mod.EventBusSubscriber(modid = StatsMod.MODID)
 public class PlayerFirstJoinHandler {
@@ -22,19 +20,23 @@ public class PlayerFirstJoinHandler {
             return;
         }
         
-        // Verificar si es la primera entrada
-        NBTTagCompound playerData = player.getEntityData();
-        if (!playerData.hasKey("StatsInitialized")) {
-            playerData.setBoolean("StatsInitialized", true);
-            
-            // Mostrar GUI de selección de raza en el cliente
-            if (player instanceof EntityPlayer) {
-                // En el próximo tick del cliente, mostrar GUI
-                net.minecraftforge.fml.common.FMLCommonHandler.instance()
-                    .getMinecraftServerInstance()
-                    .getWorld(0)
-                    .scheduleBlockUpdate(player.getPosition(), null);
+        try {
+            // Verificar si es la primera entrada
+            NBTTagCompound playerData = player.getEntityData();
+            if (!playerData.hasKey("StatsInitialized")) {
+                playerData.setBoolean("StatsInitialized", true);
+                System.out.println("[Stats Mod] First join detected for player " + player.getName());
+                
+                if (player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+                    IPlayerStats stats = PlayerStatsCapability.getStats(player);
+                    if (stats != null) {
+                        System.out.println("[Stats Mod] Stats initialized for player " + player.getName());
+                    }
+                }
             }
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in PlayerFirstJoinHandler: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

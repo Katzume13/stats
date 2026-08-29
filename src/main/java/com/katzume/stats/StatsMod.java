@@ -19,22 +19,43 @@ public class StatsMod {
 
     @EventHandler
     public void preinit(FMLPreInitializationEvent event) {
-        PlayerStatsCapability.register();
-        NetworkManager.registerMessages();
+        try {
+            System.out.println("[Stats Mod] Registering capabilities...");
+            PlayerStatsCapability.register();
+            System.out.println("[Stats Mod] Capabilities registered successfully!");
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error registering capabilities: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+        try {
+            System.out.println("[Stats Mod] Registering network messages...");
+            NetworkManager.registerMessages();
+            System.out.println("[Stats Mod] Network messages registered successfully!");
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error registering network: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         MinecraftForge.EVENT_BUS.register(new CommandRegistry());
     }
     
     @EventHandler
     public void postinit(FMLPostInitializationEvent event) {
+        System.out.println("[Stats Mod] v" + VERSION + " loaded successfully!");
     }
     
     @EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
-        event.registerServerCommand(new com.katzume.stats.command.SetRaceCommand());
+        try {
+            event.registerServerCommand(new com.katzume.stats.command.SetRaceCommand());
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error registering commands: " + e.getMessage());
+        }
     }
 }

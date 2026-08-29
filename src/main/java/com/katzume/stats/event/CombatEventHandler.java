@@ -2,10 +2,8 @@ package com.katzume.stats.event;
 
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 import com.katzume.stats.StatsMod;
@@ -21,19 +19,25 @@ public class CombatEventHandler {
             return; // Solo aplicar cuando el jugador ataca a otros
         }
         
-        DamageSource source = event.getSource();
-        if (source.getTrueSource() instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) source.getTrueSource();
-            
-            if (!player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
-                return;
+        try {
+            DamageSource source = event.getSource();
+            if (source.getTrueSource() instanceof EntityPlayer) {
+                EntityPlayer player = (EntityPlayer) source.getTrueSource();
+                
+                if (!player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+                    return;
+                }
+                
+                IPlayerStats stats = PlayerStatsCapability.getStats(player);
+                if (stats != null) {
+                    float extraDamage = stats.getTotalStrength() * 0.5f;
+                    
+                    // Aplicar daño extra
+                    event.setAmount(event.getAmount() + extraDamage);
+                }
             }
-            
-            IPlayerStats stats = PlayerStatsCapability.getStats(player);
-            float extraDamage = stats.getTotalStrength() * 0.5f;
-            
-            // Aplicar daño extra
-            event.setAmount(event.getAmount() + extraDamage);
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in onPlayerAttack: " + e.getMessage());
         }
     }
     
@@ -43,17 +47,22 @@ public class CombatEventHandler {
             return;
         }
         
-        EntityPlayer player = (EntityPlayer) event.getEntity();
-        if (!player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
-            return;
+        try {
+            EntityPlayer player = (EntityPlayer) event.getEntity();
+            if (!player.hasCapability(PlayerStatsCapability.PLAYER_STATS, null)) {
+                return;
+            }
+            
+            IPlayerStats stats = PlayerStatsCapability.getStats(player);
+            if (stats != null) {
+                // Reducir daño por defensa (armadura + inteligencia)
+                float damageReduction = (player.getTotalArmorValue() + stats.getTotalIntelligence()) * 0.05f;
+                damageReduction = Math.min(damageReduction, 0.8f); // Máximo 80% reducción
+                
+                event.setAmount(event.getAmount() * (1 - damageReduction));
+            }
+        } catch (Exception e) {
+            System.err.println("[Stats Mod] Error in onPlayerHurt: " + e.getMessage());
         }
-        
-        IPlayerStats stats = PlayerStatsCapability.getStats(player);
-        
-        // Reducir daño por defensa (armadura + inteligencia)
-        float damageReduction = (player.getTotalArmorValue() + stats.getTotalIntelligence()) * 0.05f;
-        damageReduction = Math.min(damageReduction, 0.8f); // Máximo 80% reducción
-        
-        event.setAmount(event.getAmount() * (1 - damageReduction));
     }
 }
